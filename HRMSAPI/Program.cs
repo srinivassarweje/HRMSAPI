@@ -1,10 +1,12 @@
+using BLL.Services.Implementation;
+using BLL.Services.Interfaces;
+using Common.AutoMapper;
 using DAL.Data;
 using Microsoft.EntityFrameworkCore;
-using Repository.Interfaces;
+using Microsoft.OpenApi.Models;
+using Microsoft.Win32;
 using Repository.Implementation;
-using BLL.Services.Interfaces;
-using BLL.Services.Implementation;
-using Common.AutoMapper;
+using Repository.Interfaces;
 
 namespace HRMSAPI
 {
@@ -17,6 +19,22 @@ namespace HRMSAPI
             // Add services to the container.
             builder.Services.AddControllers();
             builder.Services.AddOpenApi();
+
+            // Register Swagger with OpenAPI info
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "My API",
+                    Version = "v1",
+                    Description = "Example API with Swagger and OpenAPI",
+                    Contact = new OpenApiContact
+                    {
+                        Name = "Your Name",
+                        Email = "your@email.com"
+                    }
+                });
+            });
 
             // Register DbContext
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -33,10 +51,16 @@ namespace HRMSAPI
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
+            // Enable Swagger middleware
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
+                app.UseSwagger();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API v1");
+                    c.RoutePrefix = string.Empty; // Swagger at root URL
+                });
             }
 
             app.UseHttpsRedirection();
